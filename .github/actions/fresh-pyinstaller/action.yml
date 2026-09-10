@@ -1,0 +1,28 @@
+name: Fresh PyInstaller from this fork
+description: Compile native bootloaders, build and install a wheel, and verify its bootloaders.
+inputs:
+  source-path:
+    description: Checked-out PyInstaller fork, relative to the workspace or absolute.
+    required: true
+  output-path:
+    description: Empty output directory for the wheel and provenance manifest.
+    default: build-tools
+outputs:
+  wheel:
+    description: Absolute path to the freshly built wheel.
+    value: ${{ steps.build.outputs.wheel }}
+  manifest:
+    description: Absolute path to the JSON provenance manifest.
+    value: ${{ steps.build.outputs.manifest }}
+runs:
+  using: composite
+  steps:
+    - id: build
+      shell: bash
+      env:
+        ACTION_DIRECTORY: ${{ github.action_path }}
+        SOURCE_DIRECTORY: ${{ inputs.source-path }}
+        OUTPUT_DIRECTORY: ${{ inputs.output-path }}
+      run: |
+        python "$ACTION_DIRECTORY/test_build.py"
+        python "$ACTION_DIRECTORY/build.py" --source "$SOURCE_DIRECTORY" --output "$OUTPUT_DIRECTORY"
